@@ -1,0 +1,5 @@
+# System packages needed for RDKit and py3Dmol
+# This file is used by Streamlit Cloud for apt-get packages
+libxrender1
+libxext6
+
