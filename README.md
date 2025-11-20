@@ -1,4 +1,9 @@
-# Double Molecule Viewer with RMSD
+# Easy Double Molecule Viewer
+
+## Vibecoded with Claude 4.5 Sonnet!
+Hi user,
+Claude wrote me this pretty helpful app for viewing molecules and comparing their RMSD's. Z-matrix support is provided by the converter class from [this zmatrix library](https://github.com/jevandezande/zmatrix/tree/master).
+
 
 A Streamlit web application for visualizing two molecules together and calculating their RMSD (Root Mean Square Deviation) alignment. Perfect for comparing molecular structures in computational chemistry!
 
@@ -89,13 +94,6 @@ H 3 0.9 2 105.0 1 120.0
    - **Bond lengths** (2+ atoms)
    - **Bond angles** (3+ atoms)
    - **Dihedral angles** (4+ atoms)
-
-## 🛠️ Technologies
-
-- **Streamlit**: Web framework
-- **RDKit**: RMSD calculation and molecular alignment
-- **py3Dmol**: 3D molecular visualization
-- **NumPy**: Numerical computations
 
 ## 📋 Requirements
 
