@@ -85,7 +85,7 @@ def parse_xyz(xyz_text):
     parts = first_data_line.split()
     
     # Check if it looks like Z-matrix (1, 3, 5, or 7 fields)
-    if len(parts) in [1, 3, 5, 7]:
+    if len(parts) in [1, 2, 3, 5, 7]:
         # Likely Z-matrix format - try to convert it
         try:
             cartesian_string = zmat_string_to_cartesian_string(xyz_text)
