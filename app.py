@@ -262,7 +262,7 @@ def visualize_molecules(mol1, mol2, show_mol1, show_mol2, show_labels=False, dar
         tuple: (py3Dmol view object, atom coordinate mapping)
     """
     view = py3Dmol.view(width=800, height=600)
-    bg_color = '#1a1a1a' if dark_background else '#f0f0f0'
+    bg_color = '#1a1a1a' if dark_background else 'white'
     view.setBackgroundColor(bg_color)
     
     model_count = 0
