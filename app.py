@@ -12,18 +12,33 @@ def zmat_string_to_cartesian_string(zmat_string):
     lines = zmat_string.strip().split('\n')
     for i, line in enumerate(lines):
         items = line.split()
-        name = items[0]
+        name = items[0]  # First token is always the element
         mass = c.masses[name]
+        
         if i == 0:
+            # First line: just atom name (ignore any extra tokens)
             zmat.append([name, [], mass])
         elif i == 1:
-            name, atom1, distance = items
+            # Second line: name atom1 distance
+            # Skip to first integer token for atom reference
+            atom1 = items[1]
+            distance = items[2]
             zmat.append([name, [[int(atom1)-1, float(distance)],[],[]], mass])
         elif i == 2:
-            name, atom1, distance, atom2, angle = items
+            # Third line: name atom1 distance atom2 angle
+            atom1 = items[1]
+            distance = items[2]
+            atom2 = items[3]
+            angle = items[4]
             zmat.append([name, [[int(atom1)-1, float(distance)],[int(atom2)-1, np.radians(float(angle))],[]], mass])
         else:
-            name, atom1, distance, atom2, angle, atom3, dihedral = items
+            # Fourth+ line: name atom1 distance atom2 angle atom3 dihedral
+            atom1 = items[1]
+            distance = items[2]
+            atom2 = items[3]
+            angle = items[4]
+            atom3 = items[5]
+            dihedral = items[6]
             zmat.append([name, [[int(atom1)-1, float(distance)],
                                 [int(atom2)-1, np.radians(float(angle))],
                                 [int(atom3)-1, np.radians(float(dihedral))]], mass])
@@ -451,11 +466,40 @@ def main():
                 if mol1.GetNumAtoms() != mol2.GetNumAtoms():
                     st.error(f"Atom count mismatch! ({mol1.GetNumAtoms()} vs {mol2.GetNumAtoms()})")
                 else:
-                    # Create a copy of mol2 for alignment
-                    mol2_copy = Chem.Mol(mol2)
+                    # Get coordinates
+                    conf1 = mol1.GetConformer()
+                    conf2 = mol2.GetConformer()
                     
-                    # Align mol2 to mol1 and get RMSD
-                    rmsd = rdMolAlign.AlignMol(mol2_copy, mol1)
+                    coords1 = np.array([list(conf1.GetAtomPosition(i)) for i in range(mol1.GetNumAtoms())])
+                    coords2 = np.array([list(conf2.GetAtomPosition(i)) for i in range(mol2.GetNumAtoms())])
+                    
+                    # Center both coordinate sets
+                    center1 = coords1.mean(axis=0)
+                    center2 = coords2.mean(axis=0)
+                    coords1_centered = coords1 - center1
+                    coords2_centered = coords2 - center2
+                    
+                    # Calculate rotation matrix using Kabsch algorithm
+                    H = coords2_centered.T @ coords1_centered
+                    U, S, Vt = np.linalg.svd(H)
+                    R = Vt.T @ U.T
+                    
+                    # Ensure proper rotation (not reflection)
+                    if np.linalg.det(R) < 0:
+                        Vt[-1, :] *= -1
+                        R = Vt.T @ U.T
+                    
+                    # Apply transformation to mol2
+                    coords2_aligned = (R @ coords2_centered.T).T + center1
+                    
+                    # Calculate RMSD
+                    rmsd = np.sqrt(np.mean(np.sum((coords1 - coords2_aligned)**2, axis=1)))
+                    
+                    # Create aligned mol2
+                    mol2_copy = Chem.Mol(mol2)
+                    conf2_copy = mol2_copy.GetConformer()
+                    for i in range(mol2_copy.GetNumAtoms()):
+                        conf2_copy.SetAtomPosition(i, coords2_aligned[i].tolist())
                     
                     st.session_state.rmsd = rmsd
                     st.session_state.mol2_aligned = mol2_copy
