@@ -254,7 +254,7 @@ def get_dark_cpk_color(element):
     return dark_colors.get(element, '#404040')
 
 
-def visualize_molecules(mol1, mol2, show_mol1, show_mol2, show_labels=False):
+def visualize_molecules(mol1, mol2, show_mol1, show_mol2, show_labels=False, dark_background=True):
     """
     Create py3Dmol visualization of molecules.
     
@@ -262,7 +262,8 @@ def visualize_molecules(mol1, mol2, show_mol1, show_mol2, show_labels=False):
         tuple: (py3Dmol view object, atom coordinate mapping)
     """
     view = py3Dmol.view(width=800, height=600)
-    view.setBackgroundColor('#1a1a1a')  # Dark background
+    bg_color = '#1a1a1a' if dark_background else '#f0f0f0'
+    view.setBackgroundColor(bg_color)
     
     model_count = 0
     atom_coords = {}
@@ -518,11 +519,13 @@ def main():
     
     with right_col:
         # Visualization controls
-        viz_col1, viz_col2 = st.columns([3, 1])
+        viz_col1, viz_col2, viz_col3 = st.columns([2, 1, 1])
         with viz_col1:
             st.markdown("**3D Visualization**")
         with viz_col2:
             show_labels = st.checkbox("Show Labels", value=False, key="show_labels")
+        with viz_col3:
+            dark_bg = st.checkbox("Dark BG", value=True, key="dark_bg")
         
         # Determine which molecules to show
         mol1_display = st.session_state.mol1 if not st.session_state.use_aligned else st.session_state.mol1_original
@@ -535,7 +538,8 @@ def main():
                 mol2_display,
                 st.session_state.show_mol1,
                 st.session_state.show_mol2,
-                show_labels
+                show_labels,
+                dark_bg
             )
             st.session_state.atom_coords_cache = atom_coords
             st.components.v1.html(view._make_html(), height=540, scrolling=False)
